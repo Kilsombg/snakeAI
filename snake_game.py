@@ -11,7 +11,7 @@ class Direction(Enum):
 
 Point = namedtuple('Point', 'x, y')
 BLOCK_SIZE = 20
-SPEED = 20
+SPEED = 15
 
 # rgb colors
 WHITE = (255, 255, 255)
@@ -130,10 +130,8 @@ class SnakeGame():
 
     def __render(self):
         self.display.fill(BLACK)
-        
-        for pt in self.snake:
-            pygame.draw.rect(self.display, Green, pygame.Rect(pt.x, pt.y, BLOCK_SIZE, BLOCK_SIZE))
-            pygame.draw.rect(self.display, Green2, pygame.Rect(pt.x+4, pt.y+4, 12, 12))
+
+        self.__draw_snake()
             
         pygame.draw.rect(self.display, RED, pygame.Rect(self.food.x, self.food.y, BLOCK_SIZE, BLOCK_SIZE))
         
@@ -141,6 +139,46 @@ class SnakeGame():
         self.display.blit(text, [0, 0])
         pygame.display.flip()
 
+
+    def __draw_snake(self):
+        for i, pt in enumerate(self.snake):
+            dx = dy = 4
+            w = h = BLOCK_SIZE - 8
+            
+            if i > 0 and i < len(self.snake)-1:
+                dx, dy, w, h = self.__compare_snake_parts(pt, self.snake[i-1], dx, dy, w, h)
+                dx, dy, w, h = self.__compare_snake_parts(pt, self.snake[i+1], dx, dy, w, h)
+            elif i == 0:
+                dx, dy, w, h = self.__compare_snake_parts(pt, self.snake[i+1], dx, dy, w, h)
+            else: # i < len(self.snake)
+                dx, dy, w, h = self.__compare_snake_parts(pt, self.snake[i-1], dx, dy, w, h)
+            
+            pygame.draw.rect(self.display, Green, pygame.Rect(pt.x, pt.y, BLOCK_SIZE, BLOCK_SIZE))
+            pygame.draw.rect(self.display, Green2, pygame.Rect(pt.x+dx, pt.y+dy, w, h))
+
+
+    def __compare_snake_parts(self, pt1, pt2, dx, dy, w, h):
+
+        # check where is pt2 and draw pt1
+        # left adjacent
+        if pt1.x > pt2.x:
+            dx -= 4
+            w += 4
+        
+        # right adjacent
+        if pt1.x < pt2.x:
+            w += 4
+        
+        # top adjacent
+        if(pt1.y > pt2.y):
+            dy -= 4
+            h += 4
+        
+        # down adjacent
+        if(pt1.y < pt2.y):
+            h += 4
+
+        return dx, dy, w, h
 
 if __name__ == '__main__':
     game = SnakeGame()
